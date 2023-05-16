@@ -1,0 +1,158 @@
+﻿@page
+@model RankItems.Pages.Shows.IndexModel
+@{
+}
+
+<style>
+    .container {
+        margin-top: 20px;
+    }
+
+    .btn-new-show {
+        margin-bottom: 10px;
+    }
+
+    .form-inline {
+        margin-bottom: 10px;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-action {
+        margin-right: 5px;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
+
+<div class="container">
+    <h2>List of Shows</h2>
+    <a class="btn btn-primary btn-sm btn-new-show" href="/Shows/Create">New Show</a>
+    <form class="form-inline float-right" method="get">
+        <div class="form-group mx-sm-3 mb-2">
+            <label for="searchTerm" class="sr-only">Search</label>
+            <input type="text" class="form-control" id="searchTerm" name="searchTerm" placeholder="Search" value="@Model.SearchTerm">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Search</button>
+        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            <a href="/Shows/Index" class="btn btn-secondary mb-2">Cancel</a>
+        }
+    </form>
+    <div class="clearfix"></div>
+    <br />
+    <div class="form-group">
+        <label for="sortOrder">Rank Items</label>
+        <select class="form-control" id="sortOrder" name="sortOrder" onchange="filterTable()">
+            <option value="">Select an Option</option>
+            <option value="story_high_to_low">Story (High to Low)</option>
+            <option value="story_low_to_high">Story (Low to High)</option>
+            <option value="engagement_high_to_low">Engagement (High to Low)</option>
+            <option value="engagement_low_to_high">Engagement (Low to High)</option>
+            <option value="visual_effects_high_to_low">Visual Effects (High to Low)</option>
+            <option value="visual_effects_low_to_high">Visual Effects (Low to High)</option>
+        </select>
+    </div>
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th style="display:none">id</th>
+                <th>name</th>
+                <th>story</th>
+                <th>Visual Effects</th>
+                <th>Engagement</th>
+                <th>Created At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="showTableBody">
+            @foreach (var item in Model.listShows)
+            {
+                <tr>
+                    <td style="display:none">@item.id</td>
+                    <td>@item.name</td>
+                    <td>@item.story</td>
+                    <td>@item.VisualEffects</td>
+                    <td>@item.Engagement</td>
+                    <td>@item.created_at</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm btn-action" href="/Shows/Edit?id=@item.id">Edit</a>
+                        <a class="btn btn-danger btn-sm btn-action" href="/Shows/Delete?id=@item.id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchTerm').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.querySelector('form').submit();
+            }
+        });
+
+        function filterTable() {
+            var filterOption = document.getElementById("sortOrder").value;
+            var table = document.getElementById("showTableBody");
+            var rows = Array.from(table.getElementsByTagName("tr"));
+
+            // Set the column index to be used for sorting based on the filter option
+            var columnIndex;
+            switch (filterOption) {
+                case "story_high_to_low":
+                    columnIndex = 2; // Sort based on the "story" column in descending order
+                    break;
+                case "story_low_to_high":
+                    columnIndex = 2; // Sort based on the "story" column in ascending order
+                    break;
+                case "engagement_high_to_low":
+                    columnIndex = 4; // Sort based on the "Engagement" column in descending order
+                    break;
+                case "engagement_low_to_high":
+                    columnIndex = 4; // Sort based on the "Engagement" column in ascending order
+                    break;
+                case "visual_effects_high_to_low":
+                    columnIndex = 3; // Sort based on the "VisualEffects" column in descending order
+                    break;
+                case "visual_effects_low_to_high":
+                    columnIndex = 3; // Sort based on the "VisualEffects" column in ascending order
+                    break;
+                default:
+                    return; // Invalid filter option
+            }
+
+            rows.sort(function (a, b) {
+                var x = parseFloat(a.getElementsByTagName("td")[columnIndex].textContent);
+                var y = parseFloat(b.getElementsByTagName("td")[columnIndex].textContent);
+
+                if (filterOption.includes("high_to_low")) {
+                    return y - x;
+                } else {
+                    return x - y;
+                }
+            });
+
+            for (var i = 0; i < rows.length; i++) {
+                table.appendChild(rows[i]);
+            }
+        }
+    </script>
+}
+
